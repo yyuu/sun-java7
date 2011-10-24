@@ -1,3 +1,10 @@
+sun-java7 (7.1-1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Updated to Oracle JDK 7.
+
+ -- Yamashita Yuu <yamashita@geishatokyo.com>  Mon, 24 Oct 2011 18:12:07 +0900
+
 sun-java6 (6.26-3) unstable; urgency=low
 
   * "ia32-sun-java6-bin has improperly equal alternatives priority on amd64"

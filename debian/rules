@@ -13,7 +13,7 @@ distrelease	:= $(shell lsb_release -cs)
 
 DEB_HOST_ARCH	?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
-arch_map	:= amd64=amd64 i386=i586 lpia=i586 powerpc=ppc sparc=sparc ia64=ia64
+arch_map	:= amd64=x64 i386=i586 lpia=i586 powerpc=ppc sparc=sparc ia64=ia64
 archdir_map	:= amd64=amd64 i386=i386 lpia=i386 powerpc=ppc sparc=sparc ia64=ia64
 
 arch		:= $(strip $(patsubst $(DEB_HOST_ARCH)=%, %, \
@@ -28,25 +28,25 @@ Vendor		:= $(shell perl -e 'print ucfirst("$(VENDOR)");')
 javaname	:= $(shell echo $(word 2, $(dirparts)) | sed 's/[0-9.]*$$//')
 RELEASE		:= $(shell echo $(word 2, $(dirparts)) | sed 's/^[a-z]*//')
 # where to get it?
-relstring	:= 6
+relstring	:= 7
 PRODUCT		:= $(javaname)$(RELEASE)
 srcname		= $(VENDOR)-$(PRODUCT)
 basename	= $(ia32_prefix)$(VENDOR)-$(PRODUCT)
 dirpartsv	:= $(shell echo $(word 3, $(dirparts)) | tr '.' ' ')
 version		:= $(word 1, $(dirpartsv))
 releng_ver	:= $(word 2, $(dirpartsv))
-jdkversion	:= 1.6.0
+jdkversion	:= 1.7.0
 #unpackdir	:= jdk$(version)_$(releng_ver)
 #unpackdir	:= jdk$(jdkversion)
-unpackdir	:= jdk$(jdkversion)_$(releng_ver)
+unpackdir	:= jdk$(jdkversion)_$(shell printf "%02d" $(releng_ver))
 #jdirname	:= $(ia32_prefix)java-$(version)-$(VENDOR)-$(version).$(releng_ver)
 jdirname	:= $(ia32_prefix)java-$(version)-$(VENDOR)-$(jdkversion).$(releng_ver)
 jdiralias	:= $(ia32_prefix)java-$(version)-$(VENDOR)
 srcdir		:= $(arch)-jdk
-bin_pattern	= jdk-$(version)u$(releng_ver)-dlj-linux-%.bin
+bin_pattern	= jdk-$(version)u$(releng_ver)-linux-%.tar.gz
 all_archs	= $(filter $(subst =, , $(arch_map)), \
-			   $(subst -, , $(patsubst %.bin, %, $(wildcard *.bin))))
-priority	:= 63
+			   $(subst -, , $(patsubst %.tar.gz, %, $(wildcard *.tar.gz))))
+priority	:= 64
 
 tag		:= $(strip $(subst .,, $(RELEASE)))
 mantag		:= $(VENDOR)$(tag)
@@ -173,7 +173,6 @@ endif
 # TODO: unpack both tarballs, compare them to ensure we do things right
 # these are identical files / directories
 common_jre_things = \
-	jre/lib/audio \
 	jre/lib/cmm \
 	jre/lib/fonts \
 	jre/lib/images/cursors \
@@ -194,8 +193,6 @@ common_jre_jars = \
 	jre/lib/jce.jar \
 	jre/lib/security/US_export_policy.jar \
 	jre/lib/security/local_policy.jar \
-	jre/lib/im/indicim.jar \
-	jre/lib/im/thaiim.jar \
 	jre/lib/charsets.jar \
 
 version_tag	:= $(shell dpkg-parsechangelog | \
@@ -316,8 +313,8 @@ compare-jre-jars:
 	  exit 1; \
 	fi
 
-diff_ignore = -I 'Wednesday, May 4' \
-	-I 'Wed May 04' -I '^ *// java GenerateCharacter'
+diff_ignore = -I 'Monday, October 3' \
+	-I 'Mon Oct 03' -I '^ *// java GenerateCharacter'
 
 with_check = yes
 
@@ -384,12 +381,7 @@ unpack-amd64-stamp: unpack-i586-stamp
 
 unpack-%-stamp: $(bin_pattern)
 	rm -rf $(unpackdir)
-#	$(SHELL) tmp-$< --accept-license > /dev/null
-	binsize=$$(wc -c $< | awk '{print $$1}'); \
-	zipstart=$$(unzip -ql $< 2>&1 >/dev/null \
-			| sed -n -e 's/.* \([0-9][0-9]*\) extra bytes.*/\1/p'); \
-	tail -c $$(expr $$binsize - $$zipstart) $< > tmp-jdk.zip
-	unzip -q tmp-jdk.zip
+	tar zxf $<
 	mv $(unpackdir) $*-jdk
 	@echo $*
 
@@ -964,13 +956,13 @@ binary-$(p_javadb):	build
 
 	dh_installdocs
 	dh_installchangelogs
-	mv $(d_javadb)/$(basedir)/db/demo $(d_javadb)/usr/share/doc/$(p_javadb)/
-	mv $(d_javadb)/$(basedir)/db/docs/* $(d_javadb)/usr/share/doc/$(p_javadb)/
-	mv $(d_javadb)/$(basedir)/db/javadoc $(d_javadb)/usr/share/doc/$(p_javadb)/
-	rmdir $(d_javadb)/$(basedir)/db/docs
-	echo usr/share/doc/$(p_javadb)/demo $(basedir)/db/demo >> $(d_javadb).links
-	echo usr/share/doc/$(p_javadb) $(basedir)/db/docs >> $(d_javadb).links
-	echo usr/share/doc/$(p_javadb)/javadoc $(basedir)/db/javadoc >> $(d_javadb).links
+#	mv $(d_javadb)/$(basedir)/db/demo $(d_javadb)/usr/share/doc/$(p_javadb)/
+#	mv $(d_javadb)/$(basedir)/db/docs/* $(d_javadb)/usr/share/doc/$(p_javadb)/
+#	mv $(d_javadb)/$(basedir)/db/javadoc $(d_javadb)/usr/share/doc/$(p_javadb)/
+#	rmdir $(d_javadb)/$(basedir)/db/docs
+#	echo usr/share/doc/$(p_javadb)/demo $(basedir)/db/demo >> $(d_javadb).links
+#	echo usr/share/doc/$(p_javadb) $(basedir)/db/docs >> $(d_javadb).links
+#	echo usr/share/doc/$(p_javadb)/javadoc $(basedir)/db/javadoc >> $(d_javadb).links
 	find $(d_javadb)/$(basedir)/db  -name '*.bat' -o -name '*.ksh' | xargs chmod 644
 
 
