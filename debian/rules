@@ -294,15 +294,15 @@ compare-jre-jars:
 	jars=$$(cd i586-jdk/; find jre -name '*.jar'); \
 	for j in $$jars; do \
 	  echo =======  $$j  ========; \
-	  if [ ! -f amd64-jdk/$$j ]; then \
-	    echo "file does not exist: amd64-jdk/$$j"; \
+	  if [ ! -f x64-jdk/$$j ]; then \
+	    echo "file does not exist: x64-jdk/$$j"; \
 	    continue; \
 	  fi; \
 	  d=$${j%*.jar}; \
-	  rm -rf i586-jdk/$$d amd64-jdk/$$d; \
+	  rm -rf i586-jdk/$$d x64-jdk/$$d; \
 	  unzip -q -d i586-jdk/$$d i586-jdk/$$j; \
-	  unzip -q -d amd64-jdk/$$d amd64-jdk/$$j; \
-	  if diff -ur i586-jdk/$$d amd64-jdk/$$d; then \
+	  unzip -q -d x64-jdk/$$d x64-jdk/$$j; \
+	  if diff -ur i586-jdk/$$d x64-jdk/$$d; then \
 	    : ; \
 	  else \
 	    badjars="$$badjars $$j"; \
@@ -423,7 +423,7 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -f *-stamp
-	rm -rf amd64-jdk i586-jdk tmp-* $(unpackdir)
+	rm -rf x64-jdk i586-jdk tmp-* $(unpackdir)
 	rm -f debian/*.debhelper debian/more debian/control.old
 	rm -f debian/$(p_jbin).substvars.tmp
 	: # TODO: and these should be
